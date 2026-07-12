@@ -1,18 +1,22 @@
 import { Router } from "express";
 import pool from "../db/pool.js";
 import { hashPassword } from "../lib/password.js";
+import { registerSchema } from "../schemas/auth.schema.js";
 
 const authRouter = Router();
 
 authRouter.post("/register", async (request, response) => {
   try {
-    const { name, email, password, slug } = request.body;
+    const validationResult = registerSchema.safeParse(request.body);
 
-    if (!name || !email || !password || !slug) {
+    if (!validationResult.success) {
       return response.status(400).json({
-        message: "Name, email, password, and slug are required",
+        message: "Invalid registration data",
+        errors: validationResult.error.issues,
       });
     }
+
+    const { name, email, password, slug } = validationResult.data;
 
     const passwordHash = await hashPassword(password);
 
@@ -42,7 +46,7 @@ authRouter.post("/register", async (request, response) => {
       error.code === "23505"
     ) {
       return response.status(409).json({
-        error: "An account with this email already exists",
+        error: "An account with this email or slug already exists",
       });
     }
 
