@@ -1,5 +1,8 @@
 import { Router } from "express";
 import pool from "../db/pool.js";
+import { createAccessToken } from "../lib/jwt.js";
+import { requireAuth } from "../middleware/auth.middleware.js";
+
 import {
   hashPassword,
   comparePassword,
@@ -100,12 +103,15 @@ const user = result.rows[0];
       message:'Email or password is incorrect',
      });
   }
+  
+  const token = createAccessToken(user.id);
 
   const { password_hash, ...safeUser } = user;
 
   return response.status(200).json({
     message: "Login successful",
     user: safeUser,
+    token,
     });
   }
   catch (error: unknown) {
@@ -117,4 +123,36 @@ const user = result.rows[0];
 }
 
 });
+
+authRouter.get("/me", requireAuth, async (request, response) => {
+  try {
+    const result = await pool.query(
+      `
+        SELECT id, name, email, slug, timezone, created_at
+        FROM users
+        WHERE id = $1
+      `,
+      [request.userId]
+    );
+
+    const user = result.rows[0];
+
+    if (!user) {
+      return response.status(401).json({
+        message: "User no longer exists",
+      });
+    }
+
+    return response.status(200).json({
+      user,
+    });
+  } catch (error: unknown) {
+    console.error(error);
+
+    return response.status(500).json({
+      error: "Internal server error",
+    });
+  }
+});
+
 export default authRouter;
