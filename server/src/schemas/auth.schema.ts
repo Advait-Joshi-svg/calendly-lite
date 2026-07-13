@@ -20,3 +20,8 @@ export const registerSchema = z.object({
       "Slug can contain only lowercase letters, numbers, and hyphens"
     ),
 });
+
+export const loginSchema = z.object({
+  email: z.email(),
+  password: z.string().min(1, "Password is required"),
+});

@@ -1,7 +1,10 @@
 import { Router } from "express";
 import pool from "../db/pool.js";
-import { hashPassword } from "../lib/password.js";
-import { registerSchema } from "../schemas/auth.schema.js";
+import {
+  hashPassword,
+  comparePassword,
+} from "../lib/password.js";
+import { loginSchema, registerSchema } from "../schemas/auth.schema.js";
 
 const authRouter = Router();
 
@@ -58,4 +61,60 @@ authRouter.post("/register", async (request, response) => {
   }
 });
 
+authRouter.post("/login",async (request,response)=>{
+  try{
+    const validationResult=loginSchema.safeParse(request.body);
+
+    if(!validationResult.success){
+      return response.status(400).json({
+        message:"Invalid login data",
+        errors:validationResult.error.issues,
+      });
+    }
+    const {email,password}=validationResult.data;
+
+    const result = await pool.query(
+    `
+      SELECT id, name, email, password_hash, slug, timezone
+      FROM users
+      WHERE email = $1
+    `,
+  [email]
+);
+
+const user = result.rows[0];
+
+  if (!user) {
+  return response.status(401).json({
+    message: "Email or password is incorrect",
+  });  
+}
+
+  const passwordMatches = await comparePassword(
+    password,
+    user.password_hash
+);
+
+  if(!passwordMatches){
+    return response.status(401).json({
+      message:'Email or password is incorrect',
+     });
+  }
+
+  const { password_hash, ...safeUser } = user;
+
+  return response.status(200).json({
+    message: "Login successful",
+    user: safeUser,
+    });
+  }
+  catch (error: unknown) {
+  console.error(error);
+
+  return response.status(500).json({
+    error: "Internal server error",
+  });
+}
+
+});
 export default authRouter;
