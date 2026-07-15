@@ -17,14 +17,17 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+    "luxon": "^3.7.2",
     "pg": "^8.22.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/luxon": "^3.7.2",
     "@types/node": "^26.1.1",
     "@types/pg": "^8.20.0",
+    "node-pg-migrate": "^8.0.4",
     "tsx": "^4.23.0",
     "typescript": "^7.0.2"
   }

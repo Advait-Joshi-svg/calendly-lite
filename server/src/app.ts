@@ -1,12 +1,15 @@
 import express from "express";
 import pool from "./db/pool.js";
 import authRouter from "./routes/auth.routes.js";
+import availabilityRoutes from "./routes/availability.routes.js";
+import publicRoutes from "./routes/public.routes.js";
 
 const app = express();
 
 app.use(express.json());
 app.use("/api/auth", authRouter);
-
+app.use("/api/availability", availabilityRoutes);
+app.use("/api", publicRoutes);
 app.get("/health", (_request, response) => {
   response.status(200).json({
     status: "ok",
