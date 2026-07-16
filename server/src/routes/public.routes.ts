@@ -10,11 +10,12 @@ import {
 } from "../services/availability.service.js";
 import { createBookingSchema } from "../schemas/booking.schema.js";
 import { getUserBySlug } from "../models/user.model.js";
+import { getBookingsForDate } from "../models/booking.model.js";
+
 import {
-  createBooking,
-  findBookingConflict,
-  getBookingsForDate,
-} from "../models/booking.model.js";
+  bookPublicSlot,
+  BookingConflictError,
+} from "../services/booking.service.js";
 import { DateTime } from "luxon";
 
 const router = Router();
@@ -141,31 +142,32 @@ if (!host) {
   });
 }
 
-const conflictingBooking = await findBookingConflict(
-  host.id,
-  startsAt,
-  endsAt
-);
+try {
+  const booking = await bookPublicSlot({
+    hostUserId: host.id,
+    guestName,
+    guestEmail,
+    startsAt,
+    endsAt,
+  });
 
-if (conflictingBooking) {
-  return response.status(409).json({
-    message: "This time slot is no longer available",
+  return response.status(201).json({
+    message: "Booking created successfully",
+    booking,
+  });
+} catch (error) {
+  if (error instanceof BookingConflictError) {
+    return response.status(409).json({
+      message: error.message,
+    });
+  }
+
+  console.error(error);
+
+  return response.status(500).json({
+    message: "Failed to create booking",
   });
 }
-
-const booking = await createBooking({
-  hostUserId: host.id,
-  guestName,
-  guestEmail,
-  startsAt,
-  endsAt,
-});
-
-return response.status(201).json({
-  message: "Booking created successfully",
-  booking,
-   });
   }
 );
-
 export default router;

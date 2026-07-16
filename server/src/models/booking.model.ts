@@ -1,4 +1,6 @@
 import pool from "../db/pool.js";
+import type { PoolClient } from "pg";
+type DatabaseClient = Pick<PoolClient, "query">;
 
 type CreateBookingInput = {
   hostUserId: string;
@@ -9,8 +11,11 @@ type CreateBookingInput = {
 };
 
 
-export async function createBooking(input: CreateBookingInput) {
-  const result = await pool.query(
+export async function createBooking(
+  input: CreateBookingInput,
+  client: DatabaseClient = pool
+) {
+  const result = await client.query(
     `
       INSERT INTO bookings (
         host_user_id,
@@ -38,16 +43,16 @@ export async function createBooking(input: CreateBookingInput) {
     ]
   );
 
-
   return result.rows[0];
 }
 
 export async function findBookingConflict(
   hostUserId: string,
   startsAt: string,
-  endsAt: string
+  endsAt: string,
+  client: DatabaseClient = pool
 ) {
-  const result = await pool.query(
+  const result = await client.query(
     `
       SELECT
         id,
