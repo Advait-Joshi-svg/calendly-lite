@@ -100,3 +100,25 @@ export async function getBookingsForDate(
   return result.rows;
 }
 
+export async function getUpcomingBookingsByHost(
+  hostUserId: string
+) {
+  const result = await pool.query(
+    `
+      SELECT
+        id,
+        guest_name AS "guestName",
+        guest_email AS "guestEmail",
+        starts_at AS "startsAt",
+        ends_at AS "endsAt",
+        created_at AS "createdAt"
+      FROM bookings
+      WHERE host_user_id = $1
+        AND ends_at >= NOW()
+      ORDER BY starts_at ASC;
+    `,
+    [hostUserId]
+  );
+
+  return result.rows;
+}
