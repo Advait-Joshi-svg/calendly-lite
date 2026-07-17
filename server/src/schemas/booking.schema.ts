@@ -16,3 +16,9 @@ export const createBookingSchema = z
       path: ["endsAt"],
     }
   );
+
+export const rescheduleBookingSchema = z.object({
+  startsAt: z.iso.datetime(),
+  endsAt: z.iso.datetime(),
+});
+

@@ -10,7 +10,7 @@ const app = express();
 app.use(express.json());
 app.use("/api/auth", authRouter);
 app.use("/api/availability", availabilityRoutes);
-app.use("/api", publicRoutes);
+app.use("/api/public", publicRoutes);
 app.use("/api/bookings", bookingRoutes);
 
 app.get("/health", (_request, response) => {

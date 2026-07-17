@@ -1,6 +1,7 @@
 import pool from "../db/pool.js";
 import { createBooking } from "../models/booking.model.js";
-
+import { sendBookingConfirmationEmail } from "./email.service.js";
+import { getUserById } from "../models/user.model.js";
 export class BookingConflictError extends Error {
   constructor() {
     super("This time slot is no longer available");
@@ -21,17 +22,17 @@ export async function bookPublicSlot(
 ) {
   const client = await pool.connect();
 
+  let booking;
+
   try {
     await client.query("BEGIN");
 
-    const booking = await createBooking(
+    booking = await createBooking(
       input,
       client
     );
 
     await client.query("COMMIT");
-
-    return booking;
   } catch (error) {
     await client.query("ROLLBACK");
 
@@ -48,4 +49,25 @@ export async function bookPublicSlot(
   } finally {
     client.release();
   }
+
+  try {
+    const host = await getUserById(input.hostUserId);
+
+    if (host) {
+      await sendBookingConfirmationEmail(
+        booking.guestName,
+        booking.guestEmail,
+        new Date(booking.startsAt),
+        new Date(booking.endsAt),
+        host.name
+      );
+    }
+  } catch (error) {
+    console.error(
+      "Booking created, but confirmation email failed:",
+      error
+    );
+  }
+
+  return booking;
 }
