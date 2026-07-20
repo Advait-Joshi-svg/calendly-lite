@@ -1,17 +1,13 @@
 import express from "express";
-import pool from "./db/pool.js";
 import authRouter from "./routes/auth.routes.js";
 import availabilityRoutes from "./routes/availability.routes.js";
 import publicRoutes from "./routes/public.routes.js";
 import bookingRoutes from "./routes/booking.routes.js";
+import { errorHandler } from "./middleware/error-handler.middleware.js";
 
 const app = express();
 
 app.use(express.json());
-app.use("/api/auth", authRouter);
-app.use("/api/availability", availabilityRoutes);
-app.use("/api/public", publicRoutes);
-app.use("/api/bookings", bookingRoutes);
 
 app.get("/health", (_request, response) => {
   response.status(200).json({
@@ -19,22 +15,10 @@ app.get("/health", (_request, response) => {
   });
 });
 
-app.get("/api/users", async (_request, response) => {
-  try {
-    const result = await pool.query(
-      "SELECT id, name, email, slug, timezone, created_at FROM users"
-    );
-
-    response.status(200).json({
-      users: result.rows,
-    });
-  } catch (error) {
-    console.error("Failed to retrieve users:", error);
-
-    response.status(500).json({
-      message: "Failed to retrieve users",
-    });
-  }
-});
+app.use("/api/auth", authRouter);
+app.use("/api/availability", availabilityRoutes);
+app.use("/api/public", publicRoutes);
+app.use("/api/bookings", bookingRoutes);
+app.use(errorHandler);
 
 export default app;

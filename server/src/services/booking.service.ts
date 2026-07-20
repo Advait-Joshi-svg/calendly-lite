@@ -54,15 +54,14 @@ export async function bookPublicSlot(
     const host = await getUserById(input.hostUserId);
 
     if (host) {
-      await sendBookingConfirmationEmail(
-        booking.guestName,
-        booking.guestEmail,
-        new Date(booking.startsAt),
-        new Date(booking.endsAt),
-        host.name
-      );
-    }
-  } catch (error) {
+      await sendBookingConfirmationEmail({
+      guestName: booking.guestName,
+      guestEmail: booking.guestEmail,
+      hostName: host.name,
+      startsAt: new Date(booking.startsAt),
+      endsAt: new Date(booking.endsAt),
+    });
+  }} catch (error) {
     console.error(
       "Booking created, but confirmation email failed:",
       error

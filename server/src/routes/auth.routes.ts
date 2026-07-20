@@ -1,3 +1,4 @@
+import type { Response } from "express";
 import { Router } from "express";
 import pool from "../db/pool.js";
 import { createAccessToken } from "../lib/jwt.js";
@@ -52,76 +53,75 @@ authRouter.post("/register", async (request, response) => {
       error.code === "23505"
     ) {
       return response.status(409).json({
-        error: "An account with this email or slug already exists",
+        message: "An account with this email or slug already exists",
       });
     }
 
     console.error(error);
 
     return response.status(500).json({
-      error: "Internal server error",
+      message: "Internal server error",
     });
   }
 });
 
-authRouter.post("/login",async (request,response)=>{
-  try{
-    const validationResult=loginSchema.safeParse(request.body);
+authRouter.post("/login", async (request, response) => {
+  try {
+    const validationResult = loginSchema.safeParse(request.body);
 
-    if(!validationResult.success){
+    if (!validationResult.success) {
       return response.status(400).json({
-        message:"Invalid login data",
-        errors:validationResult.error.issues,
+        message: "Invalid login data",
+        errors: validationResult.error.issues,
       });
     }
-    const {email,password}=validationResult.data;
+
+    const { email, password } = validationResult.data;
 
     const result = await pool.query(
-    `
-      SELECT id, name, email, password_hash, slug, timezone
-      FROM users
-      WHERE email = $1
-    `,
-  [email]
-);
+      `
+        SELECT id, name, email, password_hash, slug, timezone
+        FROM users
+        WHERE email = $1
+      `,
+      [email]
+    );
 
-const user = result.rows[0];
+    const user = result.rows[0];
 
-  if (!user) {
-  return response.status(401).json({
-    message: "Email or password is incorrect",
-  });  
-}
+    if (!user) {
+      return response.status(401).json({
+        message: "Email or password is incorrect",
+      });
+    }
 
-  const passwordMatches = await comparePassword(
-    password,
-    user.password_hash
-);
+    const passwordMatches = await comparePassword(
+      password,
+      user.password_hash
+    );
 
-  if(!passwordMatches){
-    return response.status(401).json({
-      message:'Email or password is incorrect',
-     });
-  }
-  
-  const token = createAccessToken(user.id);
+    if (!passwordMatches) {
+      return response.status(401).json({
+        message: "Email or password is incorrect",
+      });
+    }
 
-  const { password_hash, ...safeUser } = user;
+    const token = createAccessToken(user.id);
 
-  return response.status(200).json({
-    message: "Login successful",
-    user: safeUser,
-    token,
+    const { password_hash, ...safeUser } = user;
+
+    return response.status(200).json({
+      message: "Login successful",
+      user: safeUser,
+      token,
+    });
+  } catch (error: unknown) {
+    console.error(error);
+
+    return response.status(500).json({
+      message: "Internal server error",
     });
   }
-  catch (error: unknown) {
-  console.error(error);
-
-  return response.status(500).json({
-    error: "Internal server error",
-  });
-}
-
 });
 
 authRouter.get("/me", requireAuth, async (request, response) => {
@@ -150,7 +150,7 @@ authRouter.get("/me", requireAuth, async (request, response) => {
     console.error(error);
 
     return response.status(500).json({
-      error: "Internal server error",
+      message: "Internal server error",
     });
   }
 });
