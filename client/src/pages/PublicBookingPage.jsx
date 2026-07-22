@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
   fetchPublicSlots,
   createPublicBooking,
@@ -14,6 +14,7 @@ import {
   formatDateLong,
 } from "../utils/date";
 import "./PublicBookingPage.css";
+import { toast } from "sonner";
 
 function buildDateOptions(count = 7) {
   const today = startOfToday();
@@ -132,27 +133,27 @@ export default function PublicBookingPage() {
       });
 
       setConfirmedBooking(data.booking);
+      toast.success("Booking confirmed");
     } catch (err) {
-      if (
-        err instanceof ApiError &&
-        err.status === 409
-      ) {
-        setSlots((previousSlots) =>
-          previousSlots.filter(
-            (slot) =>
-              slot.startsAt !== selectedSlot.startsAt
-          )
-        );
+  let message =
+    err instanceof ApiError
+      ? err.message
+      : "Something went wrong.";
 
-        setSelectedSlot(null);
-      }
+  if (err instanceof ApiError && err.status === 409) {
+    setSlots((previousSlots) =>
+      previousSlots.filter(
+        (slot) => slot.startsAt !== selectedSlot.startsAt
+      )
+    );
 
-      setSubmitError(
-        err instanceof ApiError
-          ? err.message
-          : "Something went wrong."
-      );
-    } finally {
+    setSelectedSlot(null);
+    message = "That time was just booked. Please choose another slot.";
+  }
+
+  setSubmitError(message);
+  toast.error(message);
+  } finally {
       setSubmitting(false);
     }
   }
@@ -163,6 +164,13 @@ export default function PublicBookingPage() {
   return (
     <div className="page">
       <div className="page-shell">
+        <Link
+        to="/"
+        className="public-brand-link"
+        aria-label="Calendly Lite home"
+      >
+        Calendly Lite
+      </Link>
         <header className="page-header">
           <div>
             <div className="eyebrow">
@@ -188,6 +196,7 @@ export default function PublicBookingPage() {
 
               return (
                 <button
+                type='button'
                   key={optionDate}
                   className={`date-chip${
                     active ? " active" : ""
@@ -225,12 +234,15 @@ export default function PublicBookingPage() {
             )}
 
             {status === "ready" &&
-              !hasAnySlots && (
-                <div className="state-block">
-                  No open times on this day. Try
-                  another date on the left.
-                </div>
-              )}
+                !hasAnySlots && (
+                  <div className="state-block">
+                    <strong>No available times</strong>
+
+                    <div style={{ marginTop: "0.35rem" }}>
+                      Choose another date to view open appointments.
+                    </div>
+                  </div>
+                )}
 
             {status === "ready" &&
               hasAnySlots && (
@@ -251,6 +263,7 @@ export default function PublicBookingPage() {
                             {groupSlotsList.map(
                               (slot) => (
                                 <button
+                                type="button"
                                   key={
                                     slot.startsAt
                                   }
@@ -337,6 +350,7 @@ export default function PublicBookingPage() {
                   <div className="ticket-stub">
                     <div className="ticket-actions">
                       <button
+                        type="button"
                         className="btn-primary"
                         onClick={handleConfirm}
                         disabled={submitting}
@@ -347,6 +361,7 @@ export default function PublicBookingPage() {
                       </button>
 
                       <button
+                      type="button"
                         className="btn-plain"
                         onClick={() =>
                           setSelectedSlot(null)

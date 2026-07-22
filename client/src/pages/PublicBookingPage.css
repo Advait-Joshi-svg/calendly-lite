@@ -35,6 +35,22 @@
 .date-chip.active { background: var(--ink); color: var(--paper); }
 .date-chip .dow { opacity: 0.6; margin-right: 0.4em; }
 
+.public-brand-link {
+  display: inline-block;
+  margin-bottom: 2rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.public-brand-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+
 .slot-group + .slot-group { margin-top: 1.5rem; }
 
 .slot-group-label {

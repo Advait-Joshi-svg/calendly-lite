@@ -8,6 +8,7 @@ import {
 } from "../api/availabilityApi";
 import { ApiError } from "../api/apiClient";
 import { DAY_NAMES_FULL } from "../utils/date";
+import { toast } from "sonner";
 
 const DEFAULT_START = "09:00";
 const DEFAULT_END = "17:00";
@@ -55,60 +56,122 @@ export default function AvailabilityEditor() {
   }
 
   async function handleEnable(dayOfWeek) {
-    const day = days.find((d) => d.dayOfWeek === dayOfWeek);
-    patchDay(dayOfWeek, { saving: true, error: "" });
-    try {
-      const data = await createAvailability({
-        dayOfWeek,
-        startTime: day.startTime,
-        endTime: day.endTime,
-      });
-      patchDay(dayOfWeek, { rule: data.availability, saving: false });
-    } catch (err) {
-      const message =
-        err instanceof ApiError && err.status === 500
-          ? "This day may already have availability set — try refreshing the page."
-          : err instanceof ApiError
-          ? err.message
-          : "Couldn't save this day.";
-      patchDay(dayOfWeek, { saving: false, error: message });
-    }
+  const day = days.find((d) => d.dayOfWeek === dayOfWeek);
+  patchDay(dayOfWeek, { saving: true, error: "" });
+
+  try {
+    const data = await createAvailability({
+      dayOfWeek,
+      startTime: day.startTime,
+      endTime: day.endTime,
+    });
+
+    patchDay(dayOfWeek, {
+      rule: data.availability,
+      saving: false,
+    });
+
+    toast.success(
+      `${DAY_NAMES_FULL[dayOfWeek]} availability enabled`
+    );
+  } catch (err) {
+    const message =
+      err instanceof ApiError && err.status === 500
+        ? "This day may already have availability set — try refreshing the page."
+        : err instanceof ApiError
+        ? err.message
+        : "Couldn't save this day.";
+
+    patchDay(dayOfWeek, {
+      saving: false,
+      error: message,
+    });
+
+    toast.error(message);
   }
+}
 
   async function handleDisable(dayOfWeek) {
-    const day = days.find((d) => d.dayOfWeek === dayOfWeek);
-    if (!day.rule) return;
-    patchDay(dayOfWeek, { saving: true, error: "" });
-    try {
-      await deleteAvailability(day.rule.id);
-      patchDay(dayOfWeek, { rule: null, saving: false });
-    } catch (err) {
-      patchDay(dayOfWeek, {
-        saving: false,
-        error: err instanceof ApiError ? err.message : "Couldn't remove this day.",
-      });
-    }
+  const day = days.find((d) => d.dayOfWeek === dayOfWeek);
+  if (!day.rule) return;
+
+  patchDay(dayOfWeek, { saving: true, error: "" });
+
+  try {
+    await deleteAvailability(day.rule.id);
+
+    patchDay(dayOfWeek, {
+      rule: null,
+      saving: false,
+    });
+
+    toast.success(
+      `${DAY_NAMES_FULL[dayOfWeek]} availability removed`
+    );
+  } catch (err) {
+    const message =
+      err instanceof ApiError
+        ? err.message
+        : "Couldn't remove this day.";
+
+    patchDay(dayOfWeek, {
+      saving: false,
+      error: message,
+    });
+
+    toast.error(message);
   }
+}
 
   async function handleSaveTimes(dayOfWeek) {
-    const day = days.find((d) => d.dayOfWeek === dayOfWeek);
-    if (!day.rule) return;
-    patchDay(dayOfWeek, { saving: true, error: "" });
-    
-    try {
-      const data = await updateAvailability(day.rule.id, {
-        dayOfWeek,
-        startTime: day.startTime,
-        endTime: day.endTime,
-      });
-      patchDay(dayOfWeek, { rule: data.availability, saving: false });
-    } catch (err) {
-      patchDay(dayOfWeek, {
-        saving: false,
-        error: err instanceof ApiError ? err.message : "Couldn't save those times.",
-      });
-    }
+  const day = days.find((d) => d.dayOfWeek === dayOfWeek);
+  if (!day.rule) return;
+
+  if (day.startTime >= day.endTime) {
+    const message = "End time must be later than start time.";
+
+    patchDay(dayOfWeek, {
+      error: message,
+    });
+
+    toast.error(message);
+    return;
   }
+
+  patchDay(dayOfWeek, {
+    saving: true,
+    error: "",
+  });
+
+  try {
+    const data = await updateAvailability(day.rule.id, {
+      dayOfWeek,
+      startTime: day.startTime,
+      endTime: day.endTime,
+    });
+
+    patchDay(dayOfWeek, {
+      rule: data.availability,
+      saving: false,
+    });
+
+    toast.success(
+      `${DAY_NAMES_FULL[dayOfWeek]} availability updated`
+    );
+  } catch (err) {
+    const message =
+      err instanceof ApiError
+        ? err.message
+        : "Couldn't save those times.";
+
+    patchDay(dayOfWeek, {
+      saving: false,
+      error: message,
+    });
+
+    toast.error(message);
+  }
+}
 
   return (
     <div className="page">

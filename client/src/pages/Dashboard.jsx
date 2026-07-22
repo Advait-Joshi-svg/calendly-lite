@@ -5,12 +5,13 @@ import { fetchUpcomingBookings } from "../api/bookingsApi";
 import { ApiError } from "../api/apiClient";
 import AppHeader from "../components/AppHeader";
 import { formatDateLong, formatSlotTime } from "../utils/date";
+import { toast } from "sonner";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const [bookings, setBookings] = useState(null);
   const [error, setError] = useState("");
-  const [copied, setCopied] = useState(false);
+  
 
   useEffect(() => {
     let cancelled = false;
@@ -39,21 +40,20 @@ export default function Dashboard() {
   const nextThree = bookings?.slice(0, 3) ?? [];
 
   async function handleCopyBookingLink() {
-    if (!user?.slug) return;
+  if (!user?.slug) return;
 
-    const bookingUrl = `${window.location.origin}/book/${user.slug}`;
+  const bookingUrl = `${window.location.origin}/book/${user.slug}`;
 
-    try {
-      await navigator.clipboard.writeText(bookingUrl);
-      setCopied(true);
+  try {
+    await navigator.clipboard.writeText(bookingUrl);
 
-      setTimeout(() => {
-        setCopied(false);
-      }, 2000);
-    } catch {
-      window.prompt("Copy your booking link:", bookingUrl);
-    }
+    toast.success("Booking link copied");
+  } catch {
+    window.prompt("Copy your booking link:", bookingUrl);
+
+    toast.info("Copy the booking link from the dialog");
   }
+}
 
   return (
     <div className="page">
@@ -152,7 +152,7 @@ export default function Dashboard() {
                   className="btn-plain"
                   onClick={handleCopyBookingLink}
                 >
-                  {copied ? "Copied!" : "Copy link"}
+                  Copy Link
                 </button>
               </div>
             </div>
