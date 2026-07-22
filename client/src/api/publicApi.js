@@ -1,4 +1,5 @@
 import { apiRequest } from "./apiClient";
+import apiClient from "./apiClient";
 
 // GET /api/public/users/:slug/slots?date=YYYY-MM-DD
 // -> { slug, date, timezone, slots: [{ startsAt, endsAt }] }
@@ -21,4 +22,14 @@ export function createPublicBooking(slug, { guestName, guestEmail, startsAt, end
     method: "POST",
     body: { guestName, guestEmail, startsAt, endsAt },
   });
+}
+
+export function getPublicSlots(slug, date) {
+  return apiClient.get(
+    `/api/public/users/${slug}/slots?date=${encodeURIComponent(date)}`
+  );
+}
+
+export function createPublicBooking(slug, payload) {
+  return apiClient.post(`/api/public/${slug}/bookings`, payload);
 }
