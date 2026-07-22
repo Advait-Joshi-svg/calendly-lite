@@ -1,7 +1,7 @@
 import app from "./app.js";
 import pool from "./db/pool.js";
 import { env } from "./config/env.js";
-
+import "dotenv/config";
 
 async function startServer() {
   try {
