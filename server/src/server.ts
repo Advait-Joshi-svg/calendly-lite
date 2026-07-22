@@ -8,10 +8,9 @@ async function startServer() {
     const result = await pool.query("SELECT NOW() AS current_time");
 
     console.log("Database connected");
-    console.log("Database time:", result.rows[0].current_time);
 
     app.listen(env.PORT, () => {
-  console.log(`Server is running at http://localhost:${env.PORT}`);
+  console.log(`Server is running on port ${env.PORT}`);
   });
   } catch (error) {
     console.error("Failed to start server:", error);

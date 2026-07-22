@@ -16,6 +16,7 @@ import { getBookingsForDate } from "../models/booking.model.js";
 import {
   bookPublicSlot,
   BookingConflictError,
+  BookingOutsideAvailabilityError,
 } from "../services/booking.service.js";
 import { DateTime } from "luxon";
 
@@ -45,6 +46,14 @@ router.get("/users/:slug/slots", async (request, response) => {
   const { slug } = paramsResult.data;
   const { date } = queryResult.data;
 
+  const host = await getUserBySlug(slug);
+
+  if (!host) {
+    return response.status(404).json({
+      message: "Host not found",
+    });
+  }
+
   const requestedDate = new Date(`${date}T00:00:00Z`);
   const dayOfWeek = requestedDate.getUTCDay();
 
@@ -53,18 +62,19 @@ router.get("/users/:slug/slots", async (request, response) => {
     dayOfWeek
   );
 
-  const firstRule = rules[0];
-
-  if (!firstRule) {
+  if (rules.length === 0) {
     return response.json({
-      slug,
+      host: {
+        name: host.name,
+        slug: host.slug,
+      },
       date,
-      timezone: null,
+      timezone: host.timezone,
       slots: [],
     });
   }
 
-  const timezone = firstRule.timezone;
+  const timezone = host.timezone;
 
   const slots = generateTimeSlots(
     rules,
@@ -88,7 +98,7 @@ router.get("/users/:slug/slots", async (request, response) => {
   }
 
   const bookings = await getBookingsForDate(
-    firstRule.userId,
+    host.id,
     dayStartUtc,
     dayEndUtc
   );
@@ -99,76 +109,14 @@ router.get("/users/:slug/slots", async (request, response) => {
   );
 
   return response.json({
-    slug,
+    host: {
+      name: host.name,
+      slug: host.slug,
+    },
     date,
     timezone,
     slots: availableSlots,
   });
 });
 
-router.post(
-  "/users/:slug/bookings",
-  async (request, response) => {
-   const paramsResult =
-  getPublicSlotsParamsSchema.safeParse(request.params);
-
-if (!paramsResult.success) {
-  return response.status(400).json({
-    message: "Invalid route parameters",
-    errors: paramsResult.error.issues,
-  });
-}
-
-const { slug } = paramsResult.data;
-const bodyResult =
-  createBookingSchema.safeParse(request.body);
-
-if (!bodyResult.success) {
-  return response.status(400).json({
-    message: "Invalid booking data",
-    errors: bodyResult.error.issues,
-  });
-}
-const {
-  guestName,
-  guestEmail,
-  startsAt,
-  endsAt,
-} = bodyResult.data;
-const host = await getUserBySlug(slug);
-
-if (!host) {
-  return response.status(404).json({
-    message: "Host not found",
-  });
-}
-
-try {
-  const booking = await bookPublicSlot({
-    hostUserId: host.id,
-    guestName,
-    guestEmail,
-    startsAt,
-    endsAt,
-  });
-
-  return response.status(201).json({
-    message: "Booking created successfully",
-    booking,
-  });
-} catch (error) {
-  if (error instanceof BookingConflictError) {
-    return response.status(409).json({
-      message: error.message,
-    });
-  }
-
-  console.error(error);
-
-  return response.status(500).json({
-    message: "Failed to create booking",
-  });
-}
-  }
-);
 export default router;

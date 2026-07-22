@@ -1,0 +1,141 @@
+.booking-layout {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 2.5rem;
+}
+
+@media (max-width: 640px) {
+  .booking-layout { grid-template-columns: 1fr; }
+}
+
+.date-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+@media (max-width: 640px) {
+  .date-rail { flex-direction: row; overflow-x: auto; padding-bottom: 0.5rem; }
+}
+
+.date-chip {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  text-align: left;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.date-chip:hover { background: #F0EFE9; }
+.date-chip.active { background: var(--ink); color: var(--paper); }
+.date-chip .dow { opacity: 0.6; margin-right: 0.4em; }
+
+.slot-group + .slot-group { margin-top: 1.5rem; }
+
+.slot-group-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 0.6rem;
+}
+
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 0.5rem;
+}
+
+.slot-btn {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  padding: 0.6rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: white;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.slot-btn:hover { border-color: var(--teal); }
+.slot-btn:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.slot-btn.selected { background: var(--teal); border-color: var(--teal); color: white; }
+
+/* Ticket-stub confirmation — signature element, echoes reserving a slice of time */
+.ticket {
+  margin-top: 1.75rem;
+  display: flex;
+  border: 1px solid var(--ink);
+  border-radius: 10px;
+  overflow: hidden;
+  background: white;
+}
+
+.ticket-main { flex: 1; padding: 1.25rem 1.5rem; }
+
+.ticket-main .time {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  margin: 0.15rem 0 0.9rem 0;
+}
+
+.ticket-main input {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: white;
+  margin-bottom: 0.5rem;
+}
+
+.ticket-stub {
+  width: 170px;
+  border-left: 1px dashed var(--line);
+  background: var(--paper);
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.ticket-actions { display: flex; gap: 0.5rem; }
+
+@media (max-width: 640px) {
+  .ticket { flex-direction: column; }
+  .ticket-stub { width: 100%; border-left: none; border-top: 1px dashed var(--line); }
+}
+
+.confirmed-card {
+  margin-top: 1.75rem;
+  border: 1px solid var(--success);
+  border-radius: 10px;
+  padding: 1.5rem;
+  background: #F3F8F4;
+}
+
+.confirmed-card .label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--success);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.confirmed-card h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.3rem;
+  margin: 0.3rem 0 0.4rem 0;
+}
+
+.confirmed-card p { margin: 0; color: var(--ink-soft); font-size: 0.9rem; }

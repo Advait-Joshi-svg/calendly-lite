@@ -64,7 +64,7 @@ The backend separates responsibilities across:
 ### Public booking
 
 - `GET /api/public/users/:slug/slots`
-- `POST /api/public/:slug/bookings`
+- 'POST /api/public/users/:slug/bookings'
 
 ### Booking management
 
