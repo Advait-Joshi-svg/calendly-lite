@@ -10,7 +10,7 @@ import { apiRequest } from "./apiClient";
 // Consider adding `name` to the response (call getUserBySlug in
 // public.routes.ts) so the page doesn't need a second lookup.
 export function fetchPublicSlots(slug, dateISO) {
-  return apiRequest(`/api/public/users/${slug}/slots?date=${dateISO}`);
+  return apiRequest(`/api/public/${slug}/slots?date=${dateISO}`);
 }
 
 // POST /api/public/users/:slug/bookings
