@@ -1,11 +1,16 @@
-import apiClient from "./apiClient";
+import { apiRequest } from "./apiClient";
 
-export function getPublicSlots(slug, date) {
-  return apiClient.get(
-    `/api/public/users/${slug}/slots?date=${encodeURIComponent(date)}`
+// GET /api/public/users/:slug/slots?date=YYYY-MM-DD
+export function fetchPublicSlots(slug, date) {
+  return apiRequest(
+    `/api/public/users/${encodeURIComponent(slug)}/slots?date=${encodeURIComponent(date)}`
   );
 }
 
+// POST /api/public/:slug/bookings
 export function createPublicBooking(slug, payload) {
-  return apiClient.post(`/api/public/${slug}/bookings`, payload);
+  return apiRequest(`/api/public/${encodeURIComponent(slug)}/bookings`, {
+    method: "POST",
+    body: payload,
+  });
 }
