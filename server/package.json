@@ -1,17 +1,14 @@
 {
-  "name": "server",
+  "name": "calendly-lite-server",
   "version": "1.0.0",
+  "private": true,
   "type": "module",
-  "description": "",
-  "main": "index.js",
+  "description": "REST API for the Calendly Lite scheduling application",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
@@ -31,7 +28,6 @@
     "@types/luxon": "^3.7.2",
     "@types/node": "^26.1.1",
     "@types/pg": "^8.20.0",
-    "node-pg-migrate": "^8.0.4",
     "tsx": "^4.23.0",
     "typescript": "^7.0.2"
   }
