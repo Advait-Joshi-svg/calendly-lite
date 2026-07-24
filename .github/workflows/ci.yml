@@ -20,6 +20,21 @@ jobs:
     name: Build application
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: calendly_lite_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d calendly_lite_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -41,9 +56,29 @@ jobs:
         working-directory: server
         run: npm run build
 
+      - name: Run backend migrations
+        working-directory: server
+        env:
+          PGPASSWORD: postgres
+        run: |
+          for file in migrations/*.sql; do
+            psql \
+              -h 127.0.0.1 \
+              -U postgres \
+              -d calendly_lite_test \
+              -f "$file"
+          done
+
       - name: Run backend tests
         working-directory: server
-        run: npm test --if-present
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/calendly_lite_test
+          JWT_SECRET: test-secret-key-that-is-at-least-32-characters-long
+          RESEND_API_KEY: test_key
+          EMAIL_FROM: test@example.com
+          CLIENT_URL: http://localhost:5173
+          PORT: 3000
+        run: npm test
 
       - name: Install frontend dependencies
         working-directory: client

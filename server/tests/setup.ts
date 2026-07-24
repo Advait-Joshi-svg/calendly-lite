@@ -2,5 +2,6 @@ import dotenv from "dotenv";
 
 dotenv.config({
   path: ".env.test",
-  override: true,
+  override: false,
+  quiet: true,
 });
